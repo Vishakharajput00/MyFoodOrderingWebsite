@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Container from "react-bootstrap/Container";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
@@ -12,7 +12,7 @@ import MenuItem from "@material-ui/core/MenuItem";
 import CloseIcon from "@material-ui/icons/Close";
 import { Box, Typography } from "@material-ui/core";
 import RemoveShoppingCartIcon from "@material-ui/icons/RemoveShoppingCart";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { makeStyles } from "@material-ui/core/styles";
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
@@ -22,7 +22,7 @@ import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
 import Paper from "@material-ui/core/Paper";
 import DeleteIcon from "@material-ui/icons/Delete";
-
+import { DELETE } from "../redux/action/Action";
 const StyledBadge = withStyles((theme) => ({
   badge: {
     right: -3,
@@ -41,6 +41,8 @@ const useStyles = makeStyles({
 function Header() {
   const classes = useStyles();
   const navigate = useNavigate();
+  const [price, setPrice] = useState(0);
+  const dispatch = useDispatch();
   const getData = useSelector((state) => state.cartReducer.carts);
   console.log("getData", getData);
   const [anchorEl, setAnchorEl] = useState(null);
@@ -52,6 +54,23 @@ function Header() {
   const handleClose = () => {
     setAnchorEl(null);
   };
+
+  const dlt = (id) => {
+    dispatch(DELETE(id));
+  };
+  let ini_prince;
+  const total = () => {
+    ini_prince = 0;
+    getData.map((ele) => {
+      ini_prince = ele.price + ini_prince;
+    });
+    setPrice(ini_prince);
+  };
+
+  useEffect(() => {
+    total();
+  }, [total]);
+
   return (
     <div>
       <Navbar bg="dark" variant="dark" style={{ height: "60px" }}>
@@ -60,10 +79,7 @@ function Header() {
             Add to Cart
           </NavLink>
           <Nav className="me-auto">
-            <NavLink
-              to="#home"
-              className="text-decoration-none text-light mx-3"
-            >
+            <NavLink to="/" className="text-decoration-none text-light mx-3">
               Home
             </NavLink>
           </Nav>
@@ -106,7 +122,10 @@ function Header() {
                         {getData.map((row) => (
                           <TableRow key={row.img1}>
                             <TableCell component="th" scope="row">
-                              <NavLink to={`/item_details/${row.id}`}>
+                              <NavLink
+                                to={`/item_details/${row.id}`}
+                                onClick={handleClose}
+                              >
                                 <img
                                   src={row.img1}
                                   alt=""
@@ -124,10 +143,15 @@ function Header() {
                               Price: {row.price}
                               <br />
                               <br />
-                              Quantity:
+                              Quantity:{row.quantity}
                             </TableCell>
                             <TableCell component="th" scope="row">
-                              <DeleteIcon style={{ color: "red" }} />
+                              <DeleteIcon
+                                style={{ color: "red" }}
+                                onClick={() => {
+                                  dlt(row.id);
+                                }}
+                              />
                               <br />
                               <br />
                               <br />
@@ -140,7 +164,7 @@ function Header() {
                     </Table>
                   </TableContainer>
                   <Typography>
-                    <b>Total: {getData.price}</b>
+                    <b>Total: {price}</b>
                   </Typography>
                 </Box>
               </>
